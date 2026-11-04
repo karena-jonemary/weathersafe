@@ -5,7 +5,7 @@ import { notifySevere } from '../utils/notifications';
  * Emergency Mode: automatically opens the warning (once per distinct situation)
  * when risk is Severe. `open(city, risk)` can also be called manually.
  */
-export function useEmergency(city, risk) {
+export function useEmergency(city, risk, enabled = true) {
   const [view, setView] = useState(null); // { city, risk } | null
   const alreadyShown = useRef(new Set());
 
@@ -13,14 +13,14 @@ export function useEmergency(city, risk) {
   const close = useCallback(() => setView(null), []);
 
   useEffect(() => {
-    if (!risk || risk.level < 3) return;
+    if (!enabled || !risk || risk.level < 3) return;
     const serious = risk.items.filter((i) => i.level >= 2);
     const key = `${city}|${serious.map((i) => i.type).join()}`;
     if (alreadyShown.current.has(key)) return;
     alreadyShown.current.add(key);
     setView({ city, risk });
     notifySevere(city, serious);
-  }, [city, risk]);
+  }, [city, risk, enabled]);
 
   return { view, open, close };
 }

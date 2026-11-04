@@ -8,6 +8,7 @@ export default function ChatPage() {
   const { chat } = useWeatherApp();
   const [input, setInput] = useState('');
   const logRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     const el = logRef.current;
@@ -16,8 +17,14 @@ export default function ChatPage() {
 
   const submit = (e) => {
     e.preventDefault();
+    if (!input.trim() || chat.busy) return;
     chat.send(input);
     setInput('');
+  };
+
+  const handleSuggestion = (s) => {
+    setInput(s);
+    inputRef.current?.focus();
   };
 
   return (
@@ -32,19 +39,28 @@ export default function ChatPage() {
 
       <div className="chips">
         {SUGGESTIONS.map((s) => (
-          <button key={s} type="button" disabled={chat.busy} onClick={() => chat.send(s)}>{s}</button>
+          <button
+            key={s}
+            type="button"
+            disabled={chat.busy}
+            onClick={() => handleSuggestion(s)}
+            title="Click to copy into question box"
+          >
+            {s}
+          </button>
         ))}
       </div>
 
       <form className="chat-form" onSubmit={submit}>
         <input
+          ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask about the weather…"
           aria-label="Ask a weather question"
           autoComplete="off"
         />
-        <button className="btn primary" type="submit" disabled={chat.busy}>Send</button>
+        <button className="btn primary" type="submit" disabled={chat.busy || !input.trim()}>Send</button>
       </form>
 
       <div className="muted small">

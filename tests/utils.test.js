@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { rateActivities } from '../src/utils/activities';
 import { buildDemoData } from '../src/utils/demoData';
-import { formatTemp, formatTime } from '../src/utils/format';
+import { formatTemp, formatTime, getGreeting } from '../src/utils/format';
 import { DataError, groupDaily, inRange, processAir, processCurrent, processForecast } from '../src/utils/processing';
 import { assessRisk, evaluateSnapshot } from '../src/utils/risk';
 
@@ -21,6 +21,29 @@ describe('format', () => {
   it('formats local time using the timezone offset', () => {
     // 2024-01-01 00:00 UTC + 5h30 = 5:30 AM
     expect(formatTime(1704067200, 19800)).toBe('5:30 AM');
+  });
+  it('returns appropriate greeting based on time of day', () => {
+    const d = new Date();
+    d.setHours(9, 0, 0, 0);
+    expect(getGreeting(d)).toBe('Good morning');
+    d.setHours(0, 0, 0, 0);
+    expect(getGreeting(d)).toBe('Good morning');
+    d.setHours(11, 59, 0, 0);
+    expect(getGreeting(d)).toBe('Good morning');
+
+    d.setHours(12, 0, 0, 0);
+    expect(getGreeting(d)).toBe('Good afternoon');
+    d.setHours(15, 30, 0, 0);
+    expect(getGreeting(d)).toBe('Good afternoon');
+    d.setHours(17, 59, 0, 0);
+    expect(getGreeting(d)).toBe('Good afternoon');
+
+    d.setHours(18, 0, 0, 0);
+    expect(getGreeting(d)).toBe('Good evening');
+    d.setHours(21, 15, 0, 0);
+    expect(getGreeting(d)).toBe('Good evening');
+    d.setHours(23, 59, 0, 0);
+    expect(getGreeting(d)).toBe('Good evening');
   });
 });
 
